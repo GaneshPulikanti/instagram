@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Instagram</title>
+  <meta name="description" content="Explore photos, stories, and connect with friends on InstaClone.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase JS Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Initial App Auth / Login Screen -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">Instagram</div>
+
+      <div class="auth-tabs"
+        style="display:flex; width:100%; border-bottom:1px solid var(--border-color); margin-bottom:16px;">
+        <button id="tab-login" class="auth-tab active"
+          style="flex:1; padding:8px; background:none; border:none; border-bottom:2px solid var(--accent-blue); color:var(--text-primary); font-weight:600; cursor:pointer;">Log
+          In</button>
+        <button id="tab-signup" class="auth-tab"
+          style="flex:1; padding:8px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); font-weight:600; cursor:pointer;">Sign
+          Up</button>
+      </div>
+
+      <form class="auth-form" id="login-form">
+        <div class="auth-input-group" id="group-username" style="display:none;">
+          <input type="text" id="login-username" class="auth-input" placeholder="Username">
+        </div>
+        <div class="auth-input-group" id="group-phone" style="display:none;">
+          <input type="tel" id="login-phone" class="auth-input" placeholder="Mobile Number">
+        </div>
+        <div class="auth-input-group">
+          <input type="text" id="login-email" class="auth-input" placeholder="Phone number, username, or email" required>
+        </div>
+        <div class="auth-input-group">
+          <input type="password" id="login-password" class="auth-input" placeholder="Password" required minlength="6">
+        </div>
+        <div id="auth-error-msg"
+          style="color:var(--accent-pink); font-size:0.8rem; text-align:center; display:none; margin-top:4px;"></div>
+        <button type="submit" class="auth-submit-btn" id="auth-btn-text">Log In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SVG Gradient Definitions -->
+
+  <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+    <linearGradient id="ig-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f09433" />
+      <stop offset="25%" stop-color="#e6683c" />
+      <stop offset="50%" stop-color="#dc2743" />
+      <stop offset="75%" stop-color="#cc2366" />
+      <stop offset="100%" stop-color="#bc1888" />
+    </linearGradient>
+  </svg>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-logo" id="logo-btn">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+          </svg>
+          <span style="font-family:'Grand Hotel', cursive; font-size:1.9rem;">InstaClone</span>
+        </div>
+
+        <ul class="nav-menu">
+          <li class="nav-item active" data-view="feed-view" id="nav-home">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Home</span>
+          </li>
+          <li class="nav-item" data-view="explore-view" id="nav-explore">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            <span>Explore</span>
+          </li>
+          <li class="nav-item" id="nav-notifications">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+            <span>Notifications</span>
+            <span class="nav-badge">3</span>
+          </li>
+          <li class="nav-item" id="nav-create">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>Create Post</span>
+          </li>
+          <li class="nav-item" data-view="profile-view" id="nav-profile">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+              class="user-avatar-small" alt="Profile">
+            <span>Profile</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <li class="nav-item" id="theme-toggle-btn">
+          <svg viewBox="0 0 24 24" id="theme-icon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span id="theme-text">Dark Mode</span>
+        </li>
+        <li class="nav-item" id="logout-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Log Out</span>
+        </li>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- View 1: Main Feed View -->
+      <section class="view-section active" id="feed-view">
+        <div class="feed-layout">
+          <!-- Feed Posts Container -->
+          <div class="feed-container">
+            <!-- Stories Bar -->
+            <div class="stories-container" id="stories-bar">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Posts List -->
+            <div id="posts-container" style="display:flex; flex-direction:column; gap:24px;">
+              <!-- Posts dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Sidebar Right (Suggestions) -->
+          <aside class="sidebar-right">
+            <div class="user-profile-summary">
+              <div class="user-profile-info" id="right-user-info">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                  class="author-avatar" alt="Avatar">
+                <div class="author-info">
+                  <span class="author-name">alexa_design</span>
+                  <span class="post-location">Alexa Morgan</span>
+                </div>
+              </div>
+              <button class="switch-btn">Switch</button>
+            </div>
+
+            <div class="suggestions-header">
+              <span class="suggestions-title">Suggested for you</span>
+              <span class="see-all-btn">See All</span>
+            </div>
+
+            <div class="suggestions-list" id="suggestions-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- View 2: Explore View -->
+      <section class="view-section" id="explore-view">
+        <div style="margin-bottom: 24px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-size: 1.5rem; font-weight:700;">Explore Trending Media</h2>
+          <input type="text" id="search-input" placeholder="Search accounts, tags..."
+            style="background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 16px; border-radius:8px; width:260px; outline:none;">
+        </div>
+        <div class="explore-grid" id="explore-grid-container">
+          <!-- Explore Grid items populated via JS -->
+        </div>
+      </section>
+
+      <!-- View 3: Profile View -->
+      <section class="view-section" id="profile-view">
+        <div class="profile-header">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+            class="profile-avatar-large" alt="Profile avatar">
+          <div class="profile-details">
+            <div class="profile-title-bar">
+              <h1 class="profile-username">alexa_design</h1>
+              <button class="btn-secondary">Edit Profile</button>
+              <button class="btn-secondary">Settings</button>
+            </div>
+            <ul class="profile-stats">
+              <li><span class="stat-number" id="profile-post-count">12</span> posts</li>
+              <li><span class="stat-number">1.4k</span> followers</li>
+              <li><span class="stat-number">492</span> following</li>
+            </ul>
+            <div class="profile-bio">
+              <div class="profile-bio-name">Alexa Morgan</div>
+              <p>✨ Digital Artist & UI/UX Designer</p>
+              <p>📍 San Francisco, CA | 📷 Capturing life's aesthetic moments</p>
+              <a href="#"
+                style="color:var(--accent-blue); text-decoration:none; font-weight:600; display:inline-block; margin-top:4px;">alexamorgan.design</a>
+            </div>
+          </div>
+        </div>
+
+        <ul class="profile-tabs">
+          <li class="profile-tab active" data-tab="grid">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>POSTS</span>
+          </li>
+          <li class="profile-tab" data-tab="saved">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>SAVED</span>
+          </li>
+        </ul>
+
+        <div class="explore-grid" id="profile-posts-grid" style="margin-top: 24px;">
+          <!-- User Profile Grid Items populated via JS -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal 1: Create Post Modal -->
+  <div class="modal-backdrop" id="create-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>Create new post</span>
+        <button class="modal-close-btn" id="close-create-modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="create-post-body">
+        <div class="image-upload-dropzone" id="dropzone">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+            style="margin-bottom:12px;">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p style="font-weight:600; margin-bottom:4px;">Drag photos here or click to upload</p>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Supports PNG, JPG, WebP</p>
+          <input type="file" id="file-input" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="preview-container" id="preview-box">
+          <img src="" id="preview-img" class="preview-image filter-normal" alt="Preview">
+        </div>
+
+        <!-- Filter Selection -->
+        <div id="filter-selection-section" style="display:none;">
+          <label style="font-size:0.85rem; font-weight:600; margin-bottom:8px; display:block;">Select Filter</label>
+          <div class="filters-bar">
+            <div class="filter-preset active" data-filter="filter-normal">
+              <div class="filter-thumb filter-normal" style="background:#4a5568;"></div>
+              <span>Normal</span>
+            </div>
+            <div class="filter-preset" data-filter="filter-sepia">
+              <div class="filter-thumb filter-sepia" style="background:#854d0e;"></div>
+              <span>Warm</span>
+            </div>
+            <div class="filter-preset" data-filter="filter-grayscale">
+              <div class="filter-thumb filter-grayscale" style="background:#718096;"></div>
+              <span>B&W</span>
+            </div>
+            <div class="filter-preset" data-filter="filter-vintage">
+              <div class="filter-thumb filter-vintage" style="background:#9b2c2c;"></div>
+              <span>Vintage</span>
+            </div>
+            <div class="filter-preset" data-filter="filter-vivid">
+              <div class="filter-thumb filter-vivid" style="background:#2b6cb0;"></div>
+              <span>Vivid</span>
+            </div>
+          </div>
+        </div>
+
+        <textarea class="caption-textarea" id="caption-input" placeholder="Write a caption..."></textarea>
+        <button class="btn-submit" id="publish-post-btn"
+          style="background:var(--accent-blue); color:white; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; opacity:0.6;"
+          disabled>Publish Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Story Viewer Modal -->
+  <div class="story-viewer-modal" id="story-modal">
+    <div class="story-card">
+      <div class="story-progress-bar">
+        <div class="story-progress-fill" id="story-progress-fill"></div>
+      </div>
+      <div class="story-header-overlay">
+        <div class="story-viewer-user">
+          <img src="" id="story-user-avatar" style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
+            alt="User">
+          <span id="story-user-name">Username</span>
+        </div>
+        <button class="modal-close-btn" id="close-story-modal" style="color:white;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <img src="" id="story-media-img" class="story-media" alt="Story content">
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
